@@ -1,6 +1,8 @@
 package com.peng.community.controller;
 
+import com.peng.community.util.ComunityUtil;
 import com.sun.deploy.net.HttpResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Component;
@@ -10,8 +12,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -28,6 +32,9 @@ public class AlphaController {
     public String sayHello(){
         return "Hello Spring Boot";
     }
+
+    @Autowired
+    private ComunityUtil comunityUtil;
 
     @RequestMapping("/http")
     public void http(HttpServletRequest request, HttpServletResponse response){
@@ -113,5 +120,49 @@ public class AlphaController {
         emps.add(emp2);
         return emps;
     }
+
+
+    //Cookie示例
+    @RequestMapping(path = "/cookie/set",method = RequestMethod.GET)
+    @ResponseBody
+    public String setCookie(HttpServletResponse response){
+        //创建Cookie
+        Cookie cookie = new Cookie("code",comunityUtil.getUUID());
+        //正常来说cookie是仅仅存活再一次会话的，当我们关闭浏览器就会消失，所以我们需要进行设置他的生存时间
+        cookie.setMaxAge(600*10);//单位是毫秒
+        //我们的Cookie还可以设置携带的范围  只要是在/community/alpha下的访问路径 这个cookie全部都是有效的
+        cookie.setPath("/community/alpha");
+        //发送cookie
+        response.addCookie(cookie);
+        return "set cookie";
+    }
+
+    @RequestMapping(path = "/cookie/get",method = RequestMethod.GET)
+    @ResponseBody
+    public String getCookie(@CookieValue("code") String code){
+        System.out.println(code);
+        return "get Cookie";
+    }
+
+    //Session示例  他的默认方位就是整个项目
+    @RequestMapping(path = "/session/set",method = RequestMethod.GET)
+    @ResponseBody
+    public String setSession(HttpSession session){
+        session.setAttribute("id",1);
+        session.setAttribute("name","魏坤鹏");
+        return "set Session";
+    }
+
+    @RequestMapping(path = "/session/get",method = RequestMethod.GET)
+    @ResponseBody
+    public String getSession(HttpSession session){
+        System.out.println(session.getAttribute("id"));
+        System.out.println(session.getAttribute("name"));
+        return "get Session";
+    }
+
+
+
+
 
 }
